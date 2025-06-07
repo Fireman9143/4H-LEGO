@@ -1,0 +1,62 @@
+:root{
+    --nav_bar_height: 30px;
+}
+header{
+    background-color: hsl(120, 79%, 58%);
+    text-align: center;
+    padding: 25px;
+    margin: 0;
+}
+.navbar ul{
+    background-color: hsl(0, 20%, 94%);
+    list-style-type: none;
+    height:  var(--nav_bar_height);
+    font-size: var(--nav_bar_height);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    padding: 20px;
+    margin:0;
+}
+#image{
+    display: flex;
+    margin-left: auto;
+    margin-right: auto;
+    width:auto;
+    height: 400px;
+}
+#code{
+    display: flex;
+    margin-left: auto;
+    margin-right: auto;
+    width:auto;
+    height: auto;
+}
+.pagination{
+    text-align: center;
+}
+.pagination a{
+    padding: 10px 15px;
+    display: inline-block;
+}
+.pagination a.active{
+    background-color: hsl(118, 36%, 82%);
+    font-weight: bold;
+    border-radius: 5px;
+}
+section{
+    display: flex;
+    flex-direction: column;
+    margin-left: auto;
+    margin-right: auto;
+    width: 75%;
+}
+section ul{
+    padding: 8px 15px;
+    margin-left: 5%;
+}
+section dl{
+    list-style-type: disc;
+    margin-left: 5%;
+    padding:10px 15px;
+}
