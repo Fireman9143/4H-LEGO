@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href=".\tutorial.css" rel="stylesheet">
+    <title>EV3 Mindstorm microPython</title>
+    <script src=".\JS\ace.js" type="text/javascript" charset="utf-8"></script>
+</head>
+
+<body>
+<header>
+    <h1>micropython for LEGO EV3 Mindstorm</h1>
+    <h2>Getting Started</h2>
+</header>
+<br>
+<nav class="navbar">
+    <ul>
+        <li><a href=".\index.html">Home</a></li>
+        <li><a href=".\editing.html">Code Editor</a></li>
+        <li><a href=".\pixycam.html">Pixy Cam 2</a></li>
+        <li><a href=".\pybricks.html">Writing code</a></li>
+        <li><a href=".\coding.html">Code IDE</a></li>
+    </ul>
+</nav>
+<div class="pagination">
+        <a href=".\pybricks.html"><<</a>
+        <a href=".\index.html" >1</a>
+        <a href=".\editing.html">2</a>
+        <a href=".\pixycam.html">3</a>
+        <a href=".\pybricks.html">4</a>
+        <a href=".\coding.html"class="active">5</a>
+        <a href=".\coding.html">>></a>
+</div>
+<div id="editor">
+<textarea >def function():
+    print("Hello world")
+
+function()
+    </textarea>
+</div>
+    
+<script>
+    var editor = ace.edit("editor");
+    editor.setTheme("HTML\JS\theme-dracula.js");
+    editor.session.setMode(".\python");
+</script>
+
+<footer>
+        <div class="pagination">
+            <a href=".\pybricks.html"><<</a>
+            <a href=".\index.html" >1</a>
+            <a href=".\editing.html">2</a>
+            <a href=".\pixycam.html">3</a>
+            <a href=".\pybricks.html">4</a>
+            <a href=".\coding.html"class="active">5</a>
+            <a href=".\coding.html">>></a>
+        </div>
+    </footer>
+</body>
+</html>

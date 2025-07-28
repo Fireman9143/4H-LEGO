@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href=".\tutorial.css" rel="stylesheet">
+    <title>EV3 Mindstorm microPython</title>
+</head>
+<body>
+    <header>
+        <h1>micropython for LEGO EV3 Mindstorm</h1>
+        <h2>Pixy Cam 2</h2>
+    </header>
+    <br>
+    <nav class="navbar">
+        <ul>
+            <li><a href=".\index.html">Home</a></li>
+            <li><a href=".\editing.html">Code Editor</a></li>
+            <li><a href=".\pixycam.html">Pixy Cam 2</a></li>
+            <li><a href=".\pybricks.html">Writing code</a></li>
+            <li><a href=".\coding.html">Code IDE</a></li>
+        </ul>
+    </nav>
+    <div class="pagination">
+            <a href=".\editing.html"><<</a>
+            <a href=".\index.html">1</a>
+            <a href=".\editing.html">2</a>
+            <a href=".\pixycam.html" class="active">3</a>
+            <a href=".\pybricks.html">4</a>
+            <a href=".\coding.html">5</a>
+            <a href=".\pybricks.html">>></a>
+        </div>
+    </footer>
+    <br>
+    <main>
+        <section>
+            <h3>The Pixy Cam 2 camera module</h3>
+            <p>
+                The 2025 4H Illinois State Competition had AI as a main theme.  The <a href="https://docs.pixycam.com/wiki/doku.php?id=wiki:v2:overview">Pixy Cam 2</a> 
+                is a camera with its own program that allows the EV3 to respond to vector images, shapes, colors, and barcodes.  At the time of making this site, 
+                RobotShop has the Pixy 2.1 for LEGO, which includes the cable with LEGO's proprietary RJ12 connector
+                <a href="https://www.adafruit.com/product/4434">Adafruit female socket</a>. While we're on the subject, as we expand into more capable robots you may 
+                need more custom wire connections. Mindsensors 
+                <a href="https://www.mindsensors.com/home/69-65-nxtev3-compatible-male-plugs.html#/48-qty-pack_of_10">(male plug)</a> has many third party parts that
+                are compatible with EV3.
+            </p>
+            <p>
+                Pixy2 has software that needs to be installed on the computer, separate from VS Code.  The software will be used to configure the camera. Be sure of
+                which version of software you are downloading.  The Pixy2 documentation is good, though it's not easy to follow.  Here are some guidelines:
+                <ol>Pixy2 for Labview or Scratch:
+                    <li>Go to <a href="https://pixycam.com/downloads-pixy2/">Pixy2 Downloads</a></li>
+                    <li>Select and download the PixyMon V2 program and the Pixy2 <b>LEGO</b> firmware</li>
+                    <li>Download the LEGO Blocks version 2.0.9 file (needed to make the LabView and Scratch blocks)</li>
+                    <li>Follow the <a href="https://docs.pixycam.com/wiki/doku.php?id=wiki:v2:uploading_new_firmware">uploading firmware</a> instructions to install 
+                    the LEGO firmware on the camera</li>
+                    <li>Open LabView and follow the <a href="https://docs.pixycam.com/wiki/doku.php?id=wiki:v2:lego_home_edition">LEGO Mindstorms EV3 Home Edition</a>
+                    instructions for installing the block</li>
+                </ol>
+                <ol>Pixy2 for Python:
+                    <li>Go to <a href="https://pixycam.com/downloads-pixy2/">Pixy2 Downloads</a></li>
+                    <li>Select and download the PixyMon V2 program and the Pixy2 <b>general</b> firmware</li>
+                    <li>Go to the <a href="https://docs.pixycam.com/wiki/doku.php?id=wiki:v2:python">Python tutorial page</a> and scroll down to <i>Installing 
+                        pixycamev3: 2. Adding the API to your project folder</i>, and look for the <a href="https://github.com/charmedlabs/pixycamev3/tree/main/pixycamev3">
+                        github</a> link to find the pixy2.py file to copy into your project folder as described.</li>
+                    <li>Follow the <a href="https://docs.pixycam.com/wiki/doku.php?id=wiki:v2:uploading_new_firmware">uploading firmware</a> instructions to install 
+                        the general firmware on the camera</li>
+                </ol>
+            </p>
+
+        </section>
+    </main>
+    <footer>
+        <div class="pagination">
+            <a href=".\editing.html"><<</a>
+            <a href=".\index.html">1</a>
+            <a href=".\editing.html">2</a>
+            <a href=".\pixycam.html" class="active">3</a>
+            <a href=".\pybricks.html">4</a>
+            <a href=".\coding.html">5</a>
+            <a href=".\pybricks.html">>></a>
+        </div>
+    </footer>
+</body>
+</html>
