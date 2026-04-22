@@ -149,6 +149,7 @@ def approach():
                 
     
 def line_follow():
+    active = True
     X_REF = 39   # X-center coordinate of view for line follow  screen size = (78, 51)
     # Get linetracking data from pixy2
     data = pixy2.get_linetracking_data()
@@ -162,31 +163,41 @@ def line_follow():
                 if data.barcodes[i].code == 0:
                     pass
                 if data.barcodes[i].code == 1:
-                    #Location of next challenge
-                    return
+                    #Pickup pillar 1
+                    active = False
+                    return active
                 if data.barcodes[i].code == 2:
-                    #Location of next challenge
-                    pass
+                    #Pickup pillar 2
+                    active = False
+                    return active
                 if data.barcodes[i].code == 3:
-                    #Location of next challenge
-                    pass
+                    #Pickup pillar 3
+                    active = False
+                    return active
                 if data.barcodes[i].code == 4:
-                    #Location of next challenge
-                    pass
+                    #Pickup pillar 4
+                    active = False
+                    return active
                 if data.barcodes[i].code == 5:
-                    pass
+                    #Turn left
+                    drive_base.turn(-90)
+                    drive_base.stop()
                 if data.barcodes[i].code == 6:
-                    pass
+                    #Turn right
+                    drive_base.turn(90)
+                    drive_base.stop()
                 if data.barcodes[i].code == 7:
                     pass
                 if data.barcodes[i].code == 8:
                     pass
                 if data.barcodes[i].code == 9:
-                    pass
+                    #Turn left
+                    drive_base.turn(-90)
+                    drive_base.stop()
                 if data.barcodes[i].code == 10:
                     pass
                 if data.barcodes[i].code == 11:
-                    pass
+                    return False
                 if data.barcodes[i].code == 12:
                     pass
                 if data.barcodes[i].code == 13:
@@ -207,12 +218,12 @@ def line_follow():
     data.clear()
 
 def color_sense_follow():
-    BLACK = 9
-    WHITE = 85
+    BLACK = 15
+    WHITE = 99
     threshold = (BLACK + WHITE) / 2
 
     # Set the drive speed at 100 millimeters per second.
-    DRIVE_SPEED = 100
+    DRIVE_SPEED = 70
 
     # Set the gain of the proportional line controller. This means that for every
     # percentage point of light deviating from the threshold, we set the turn
@@ -220,12 +231,16 @@ def color_sense_follow():
 
     # For example, if the light value deviates from the threshold by 10, the robot
     # steers at 10*1.2 = 12 degrees per second.
-    PROPORTIONAL_GAIN = 1.2
+    PROPORTIONAL_GAIN = 0.4
 
     while True:
         deviation = colorA_sensor.reflection() - threshold
         turn_rate = PROPORTIONAL_GAIN * deviation
         drive_base.drive(DRIVE_SPEED, turn_rate)
+        print(colorA_sensor.reflection())
+        if colorA_sensor.reflection() >95:
+            drive_base.stop()
+            break
 
 def mark_x():
     def color_check():
@@ -271,7 +286,17 @@ def mark_x():
             RIGHT_MOTOR.run_angle(speed = -30, rotation_angle = 6)#Determine what 0.3 rotations is in degrees angle
 
 def pickup_number():
-    pass
+    active = True
+    open_claw()
+    while active:
+        line_follow()
+        found = line_follow()
+        if found == False:
+            break
+    while sonic_sensor.distance() >= 85:
+        drive_base.drive(50, 0)
+    drive_base.stop()
+    close_claw()
 
 def estimate_distance():
     K = 1000  # from calibration
@@ -300,18 +325,18 @@ def site_map():
     color_line_follow()
 
 
-def color_line_follow(l_speed = 150, r_speed = 150, direction='left', rotations=1):
+def color_line_follow(l_speed = 250, r_speed = 250, direction='left', rotations=1):
     """Turn will be adjusted in code. Rotations multiplied by 360 degrees."""
-    rotation = 360 * rotations
+    rotation = int(360 * rotations)
     for i in range(2):
-        if colorA_sensor.color() == Color.BLUE and colorA_sensor.color() == Color.BLACK:
+        if colorA_sensor.color() == Color.BLUE or colorA_sensor.color() == Color.BLACK:
             while colorA_sensor.color() != Color.YELLOW or colorA_sensor.color() != Color.RED:
                 LEFT_MOTOR.run(l_speed)
-                RIGHT_MOTOR.run(r_speed + 5)
+                RIGHT_MOTOR.run(r_speed + 50)
                 print('color seen')
         else:
             while colorA_sensor.color() != Color.YELLOW or colorA_sensor.color() != Color.RED:
-                LEFT_MOTOR.run(l_speed + 5)
+                LEFT_MOTOR.run(l_speed + 50)
                 RIGHT_MOTOR.run(r_speed)
         if direction == 'left':
             LEFT_MOTOR.stop()
@@ -322,17 +347,17 @@ def color_line_follow(l_speed = 150, r_speed = 150, direction='left', rotations=
             LEFT_MOTOR.reset_angle(0)
             LEFT_MOTOR.run_target(l_speed, target_angle=rotation)
 
-def boulder_run(l_speed = 50, r_speed = 50, rotations=0.1):
+def boulder_run(l_speed = 250, r_speed = 250, rotations=0.1):
     """Turn will be adjusted in code. Rotations multiplied by 360 degrees."""
-    rotation = 360 * rotations
+    rotation = int(360 * rotations)
     for i in range(3):
         if colorA_sensor.color() == Color.BLUE or colorA_sensor.color() == Color.BLACK:
             while colorA_sensor.color() != Color.YELLOW:
                 LEFT_MOTOR.run(l_speed)
-                RIGHT_MOTOR.run(r_speed - 8)
+                RIGHT_MOTOR.run(r_speed - 80)
         else:
             while colorA_sensor.color() != Color.YELLOW:
-                LEFT_MOTOR.run(l_speed - 8)
+                LEFT_MOTOR.run(l_speed - 80)
                 RIGHT_MOTOR.run(r_speed)
         LEFT_MOTOR.reset_angle(0)
         RIGHT_MOTOR.reset_angle(0)
@@ -344,50 +369,8 @@ def challenge_1():
     from base camp to primary dig site"""
     while True:
         line_follow()
-
-    # if detect_colors(2):
-    #     print("turning left")
-    #     while detect_colors(2).x_center < 290:
-    #         avoid_to_left(2)
-    # drive_base.straight(160)
-    # drive_base.turn(18)
-    # drive_base.straight(220)
-    # drive_base.turn(25)
-    # drive_base.straight(110)
-    # drive_base.stop()
-
-    # if detect_colors(2):
-    #     print("turning right")
-    #     while detect_colors(2).x_center > 45:
-    #         avoid_to_right(2)
-    # drive_base.straight(100)
-    # drive_base.turn(-18)
-    # drive_base.straight(200)
-    # drive_base.turn(-30)
-    # drive_base.straight(110)
-    # drive_base.stop()
-
-    # if detect_colors(2):
-    #     print("turning left")
-    #     while detect_colors(2).x_center < 290:
-    #         avoid_to_left(2)
-    # drive_base.straight(160)
-    # drive_base.turn(18)
-    # drive_base.straight(220)
-    # drive_base.turn(25)
-    # drive_base.straight(110)
-    # drive_base.stop()
-
-    # if detect_colors(2):
-    #     print("turning right")
-    #     while detect_colors(2).x_center > 45:
-    #         avoid_to_right(2)
-    # drive_base.straight(100)
-    # drive_base.turn(-18)
-    # drive_base.straight(200)
-    # drive_base.turn(-30)
-    # drive_base.straight(110)
-    # drive_base.stop()
+        if line_follow() == False:
+            break
 
 def challenge_2():
     """Pickup and place 4 markers from equipment site 
@@ -424,6 +407,13 @@ def challenge_7():
 def challenge_8():
     """Retrieve parts from main dig site and take to reconstruction site. 
     Place four 8" pillars on a 12x12 base.  Place a 4" tall roof on the pillars."""
+
+    pickup_number()
+    drive_base.straight(-50)
+    drive_base.turn(180)
+    drive_base.straight(200)
+    drive_base.turn(-90)
+
     i = 1
     while i <= 4:
         open_claw()
@@ -440,8 +430,24 @@ def challenge_8():
         i += 1
         close_claw()
 
+    active = True
+    for _ in range(4):
+        open_claw()
+        while active:
+            line_follow()
+            found = line_follow()
+            if found == False:
+                break
+        while sonic_sensor.distance() >= 85:
+            drive_base.drive(50, 0)
+        drive_base.stop()
+        close_claw()
+
+
 def challenge_9():
     """Retrieve an artifact that triggers a boulder run. Place artifact in bin without getting hit by boulder"""
+    color_sense_follow()
+    robot1.speaker.play_file('indiana_jones.wav')
 
 def main():
     # The server must be started before the client!
@@ -455,7 +461,9 @@ def main():
     # mbox.send('hello to you!')
 
     #Code for challenges here
-    site_map()
+    challenge_9()
+
+
 
 if __name__ == '__main__':
     main()
