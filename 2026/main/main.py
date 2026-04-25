@@ -11,20 +11,12 @@ from pixycamev3.pixy2 import Pixy2, MainFeatures, Pixy2Mode
 #Intiialize bluetooth server
 server = BluetoothMailboxServer()
 mbox = TextMailbox('greeting', server)
-# The server must be started before the client!
-# print('waiting for connection...')
-# server.wait_for_connection()
-# print('connected!')
-# # In this program, the server waits for the client to send the first message
-# # and then sends a reply.
-# mbox.wait()
-# print(mbox.read())
-# mbox.send('hello to you!')
+
 
 # Defining constants
-KP = 400     # Proportional constant PID-controller
-KI = 1200   # Integral constant PID-controller
-KD = 5   # Derivative constant PID-controller
+KP = 0.35     # Proportional constant PID-controller
+KI = .0045    # Integral constant PID-controller
+KD = 4        # Derivative constant PID-controller
 GAIN = 5    # Gain for motorspeed
 basic_speed = 250
 
@@ -218,9 +210,15 @@ def line_follow():
                     pass
                     
     #Actual code to follow the line
+    integral = 0
+    derivitive = 0
+    lastKD = 0
     if data.number_of_vectors > 0:
         dx = X_REF - data.vectors[0].x1
-        move(dx)
+        integral = integral + dx
+        derivitive = dx - lastKD
+        turnrate = KP * dx + KI * integral + KD * derivitive
+        move(turnrate)
     else:
         # No vector data, stop robot
         stop()
@@ -231,26 +229,25 @@ def color_sense_follow():
     BLACK = 15
     WHITE = 99
     threshold = (BLACK + WHITE) / 2
+    KP = .4
+    KI = 0
+    KD = 0
+    lastKD = 0
+    integral = 0
+    derivitive = 0
 
     # Set the drive speed at 100 millimeters per second.
-    DRIVE_SPEED = 70
-
-    # Set the gain of the proportional line controller. This means that for every
-    # percentage point of light deviating from the threshold, we set the turn
-    # rate of the drivebase to 1.2 degrees per second.
-
-    # For example, if the light value deviates from the threshold by 10, the robot
-    # steers at 10*1.2 = 12 degrees per second.
-    PROPORTIONAL_GAIN = 0.4
+    DRIVE_SPEED = 40
 
     while True:
-        deviation = colorA_sensor.reflection() - threshold
-        turn_rate = PROPORTIONAL_GAIN * deviation
+        deviation =  colorA_sensor.reflection() - threshold
+        integral = integral + deviation
+        derivitive = deviation - lastKD
+        turn_rate = KP * deviation + KI * integral + KD * derivitive
         drive_base.drive(DRIVE_SPEED, turn_rate)
-        print(colorA_sensor.reflection())
-        if colorA_sensor.reflection() >95:
-            drive_base.stop()
-            break
+        lastKD = deviation
+        #print(colorA_sensor.reflection())
+        
 
 def mark_x():
     def color_check():
@@ -457,6 +454,8 @@ def challenge_8():
 def challenge_9():
     """Retrieve an artifact that triggers a boulder run. Place artifact in bin without getting hit by boulder"""
     color_sense_follow()
+    #while True:
+    #line_follow()
     robot1.speaker.play_file('indiana_jones.wav')
 
 def main():
@@ -472,8 +471,6 @@ def main():
 
     #Code for challenges here
     challenge_9()
-
-
 
 if __name__ == '__main__':
     main()
