@@ -12,118 +12,23 @@ from pixycamev3.pixy2 import Pixy2, MainFeatures, Pixy2Mode
 server = BluetoothMailboxServer()
 mbox = TextMailbox('greeting', server)
 
-
 # Defining constants
-KP = 0.35     # Proportional constant PID-controller
-KI = .0045    # Integral constant PID-controller
-KD = 4        # Derivative constant PID-controller
-GAIN = 5    # Gain for motorspeed
-basic_speed = 250
+KP = 1.2      # Proportional constant PID-controller
+KI = 0    # Integral constant PID-controller
+KD = 2        # Derivative constant PID-controller
+GAIN = 7    # Gain for motorspeed
 
 robot1 = EV3Brick()
-motor_a = Motor(Port.A, positive_direction=Direction.CLOCKWISE)#run(speed), run_time(speed, time, then=Stop.HOLD, wait=True), run_angle(speed, rotation_angle, 
-motor_b = Motor(Port.B, positive_direction=Direction.CLOCKWISE)#then=Stop.HOLD, wait=True), run_target(speed, target_angle, then=Stop.HOLD, wait=True), 
-motor_c = Motor(Port.C, positive_direction=Direction.CLOCKWISE)#run_until_stalled(speed, then=Stop.COAST, duty_limit=None), dc(duty), stop(), brake(), hold()
-motor_d = Motor(Port.D, positive_direction=Direction.CLOCKWISE)#speed(), angle(), reset_angle()
-pixy2 = Pixy2(port=1, i2c_address=0x54)
+CLAW_MOTOR = Motor(Port.A, positive_direction=Direction.CLOCKWISE)
+LEFT_MOTOR = Motor(Port.B, positive_direction=Direction.CLOCKWISE) 
+RIGHT_MOTOR = Motor(Port.C, positive_direction=Direction.CLOCKWISE)
+MEDIUM_MOTOR = Motor(Port.D, positive_direction=Direction.CLOCKWISE)
 
-#touch = TouchSensor(Port.S2) # pressed()
-colorA_sensor = ColorSensor(Port.S3) # color(), ambient(), reflection(), rgb()
-colorB_sensor = ColorSensor(Port.S2)
+colorA_sensor = ColorSensor(Port.S2) #Line follow sensor
+colorB_sensor = ColorSensor(Port.S3) #Color detector
 sonic_sensor = UltrasonicSensor(Port.S4) # distance(), presence()
 
-CLAW_MOTOR = motor_a
-LEFT_MOTOR = motor_b
-RIGHT_MOTOR = motor_c
-MEDIUM_MOTOR = motor_d
-
-drive_base = DriveBase(left_motor=LEFT_MOTOR, right_motor=RIGHT_MOTOR, wheel_diameter=42, axle_track=143)
-#straight(distance), turn(angle), settings(straight_speed, straight_acceleration, turn_rate, turn_acceleration), drive(drive_speed, turn_rate), stop()
-#distance(), angle(), state(), reset()
-#drive_base.settings(straight_speed=700, straight_acceleration=400, turn_rate=70, turn_acceleration=400)
-# normal drive_base settings = (97, 391, 78, 313), when changed to above returns (293, 500, 80, 300)
-
-def move(speed_x):
-    """Move robot when in _ACTIVE mode. DOES NOT WORK WITH DRIVEBASE ACTIVE"""
-    speed_x *= GAIN
-    LEFT_MOTOR.run(basic_speed - speed_x)
-    RIGHT_MOTOR.run(basic_speed + speed_x)
-
-def stop():
-    """STOPS MOTORS WHEN INDIVIDUALLY USED, DOES NOT WORK WITH DRIVEBASE ACTIVE"""
-    LEFT_MOTOR.stop()
-    RIGHT_MOTOR.stop()
-
-def detect_colors(color_sig):
-    try:
-        nr_blocks, block = pixy2.get_blocks(color_sig, 255)
-        return block[0] if block else None
-    except AttributeError:
-        return False                                                                                                     
-
-def track_color(color_sig):
-    X_REF = 158  # X-coordinate of referencepoint for color track screen size = (315, 207)
-    Y_REF = 150  # Y-coordinate of referencepoint for color track screen size = (315, 207)
-    
-    #int8_t getBlocks(bool wait [optional], uint8_t sigmap [optional], uint8_t maxBlocks [optional])
-    """getBlocks() gets all detected blocks in the most recent frame. The new data is then available in the blocks member variable. 
-    The returned blocks are sorted by area, with the largest blocks appearing first in the blocks array. 
-    It returns an error value (<0) if it fails and the number of detected blocks (>=0) if it succeeds."""
-    # Request block
-    nr_blocks, block = pixy2.get_blocks(color_sig, 255) # get_blocks(signature to look for, total blocks to look at)
-    #nr_blocks = total number of blocks of allowed signatures, block = list of blocks received
-
-    #If blocks are found 
-    try:
-        if nr_blocks > 0:
-            # Find center of the block on (x, y)
-            x = block[0].x_center # X-centrois of object
-            y = block[0].y_center # Y-centroid of object
-            #control for rotation (how far away is center of block from center of screen designated above as X_REF)
-            dx = X_REF - x  # Error in reference to X_REF
-            #control for forward/backward movement (how far away is center of block from center of screen designated above as Y_REF)
-            dy = Y_REF - y  # Error in reference to Y_REF
-            # Calculate motorspeed out of speed_x and speed_y
-            # Use GAIN otherwise speed will be to slow, but limit in range [-1000,1000]
-            rspeed = (dy - dx)
-            lspeed = (dy + dx)
-            RIGHT_MOTOR.run(speed = round(rspeed))
-            LEFT_MOTOR.run(speed = round(lspeed))
-        else:
-            # SIG1 not detected, stop motors
-            stop()
-    except AttributeError:
-        return
-
-def avoid_to_left(color_sig):
-    X_REF = 300 #(315, 207)
-    nr_blocks, block = pixy2.get_blocks(color_sig, 255)
-    try:
-        if nr_blocks > 0:
-            x = block[0].x_center
-            dx = X_REF - x
-            if x < X_REF:
-                LEFT_MOTOR.run(speed = -dx)
-                RIGHT_MOTOR.run(speed = dx)
-        else:
-            stop()
-    except AttributeError:
-        return
-
-def avoid_to_right(color_sig):
-    X_REF = 30 #(315, 207)
-    nr_blocks, block = pixy2.get_blocks(color_sig, 255)
-    try:
-        if nr_blocks > 0:
-            x = block[0].x_center
-            dx = X_REF - x
-            if x > X_REF:
-                LEFT_MOTOR.run(speed = -dx)
-                RIGHT_MOTOR.run(speed = dx)
-        else:
-            stop()    
-    except AttributeError:
-        return
+drive_base = DriveBase(left_motor=LEFT_MOTOR, right_motor=RIGHT_MOTOR, wheel_diameter=60, axle_track=144)
 
 def close_claw():
     CLAW_MOTOR.reset_angle(950)
@@ -133,344 +38,165 @@ def open_claw():
     CLAW_MOTOR.reset_angle(0)
     CLAW_MOTOR.run_target(500, 950)
 
-def approach():
-    X_REF = 39   # X-center coordinate of view for line follow  screen size = (78, 51)
-    # Get linetracking data from pixy2
-    data = pixy2.get_linetracking_data()
-    # Process data
-    if data.error:
-        # Data error: unkown feature type, try reading again
-        pass
-    else:
-        if data.number_of_barcodes > 0:
-            for i in range(0, data.number_of_barcodes):
-                if data.barcodes[i].y <= 39:
-                    move(-2)
-                if data.barcodes[i].y > 40:
-                    move(2)
-                
-    
-def line_follow():
-    active = True
-    X_REF = 39   # X-center coordinate of view for line follow  screen size = (78, 51)
-    # Get linetracking data from pixy2
-    data = pixy2.get_linetracking_data()
-    # Process data
-    if data.error:
-        # Data error: unkown feature type, try reading again
-        pass
-    else:
-        if data.number_of_barcodes > 0:
-            for i in range(0, data.number_of_barcodes):
-                if data.barcodes[i].code == 0:
-                    pass
-                if data.barcodes[i].code == 1:
-                    #Pickup pillar 1
-                    active = False
-                    return active
-                if data.barcodes[i].code == 2:
-                    #Pickup pillar 2
-                    active = False
-                    return active
-                if data.barcodes[i].code == 3:
-                    #Pickup pillar 3
-                    active = False
-                    return active
-                if data.barcodes[i].code == 4:
-                    #Pickup pillar 4
-                    active = False
-                    return active
-                if data.barcodes[i].code == 5:
-                    #Turn left
-                    drive_base.turn(-90)
-                    drive_base.stop()
-                if data.barcodes[i].code == 6:
-                    #Turn right
-                    drive_base.turn(90)
-                    drive_base.stop()
-                if data.barcodes[i].code == 7:
-                    pass
-                if data.barcodes[i].code == 8:
-                    pass
-                if data.barcodes[i].code == 9:
-                    #Turn left
-                    drive_base.turn(-90)
-                    drive_base.stop()
-                if data.barcodes[i].code == 10:
-                    pass
-                if data.barcodes[i].code == 11:
-                    return False
-                if data.barcodes[i].code == 12:
-                    pass
-                if data.barcodes[i].code == 13:
-                    pass
-                if data.barcodes[i].code == 14:
-                    pass
-                if data.barcodes[i].code == 15:
-                    pass
-                    
-    #Actual code to follow the line
-    integral = 0
-    derivitive = 0
-    lastKD = 0
-    if data.number_of_vectors > 0:
-        dx = X_REF - data.vectors[0].x1
-        integral = integral + dx
-        derivitive = dx - lastKD
-        turnrate = KP * dx + KI * integral + KD * derivitive
-        move(turnrate)
-    else:
-        # No vector data, stop robot
-        stop()
-    # Clear data for reading next loop
-    data.clear()
-
 def color_sense_follow():
+    """General line follow and placing the first two pillars"""
     BLACK = 15
-    WHITE = 99
+    WHITE = 100
     threshold = (BLACK + WHITE) / 2
-    KP = .4
-    KI = 0
-    KD = 0
     lastKD = 0
     integral = 0
     derivitive = 0
 
     # Set the drive speed at 100 millimeters per second.
-    DRIVE_SPEED = 40
+    DRIVE_SPEED = 90
 
     while True:
-        deviation =  colorA_sensor.reflection() - threshold
+        deviation =  (colorA_sensor.reflection() - threshold)*-1
         integral = integral + deviation
         derivitive = deviation - lastKD
         turn_rate = KP * deviation + KI * integral + KD * derivitive
         drive_base.drive(DRIVE_SPEED, turn_rate)
         lastKD = deviation
+        
+        if colorB_sensor.color() == Color.RED:
+            drive_base.stop()
+            break
+        if colorB_sensor.color() == Color.BLACK:
+            drive_base.stop()
+            drive_base.turn(-80)
+
+def color_sense_follow2():
+    """Changed the color sense logic to assist placing the last two pillars"""
+    BLACK = 15
+    WHITE = 100
+    threshold = (BLACK + WHITE) / 2
+    lastKD = 0
+    integral = 0
+    derivitive = 0
+
+    # Set the drive speed at 100 millimeters per second.
+    DRIVE_SPEED = 90
+
+    while True:
+        deviation =  (colorA_sensor.reflection() - threshold)*-1
+        integral = integral + deviation
+        derivitive = deviation - lastKD
+        turn_rate = KP * deviation + KI * integral + KD * derivitive
+        drive_base.drive(DRIVE_SPEED, turn_rate)
+        lastKD = deviation
+
+        if colorB_sensor.color() == Color.BLACK:
+            drive_base.stop()
+            drive_base.turn(-80)
+        if colorB_sensor.color() == Color.GREEN:
+            drive_base.stop()
+            break
         #print(colorA_sensor.reflection())
         
-
 def mark_x():
-    def color_check():
-        while colorA_sensor.color() != Color.BROWN:
-            if colorA_sensor.color() == Color.BLACK or colorA_sensor.color() == Color.BLUE:
-                LEFT_MOTOR.run(20)
-                RIGHT_MOTOR.run(17)
-            else:
-                LEFT_MOTOR.run(17)
-                RIGHT_MOTOR.run(20)
-    color_check()
-    LEFT_MOTOR.run_angle(speed = 25, rotation_angle = 2)#Determine what 0.38 rotations is in degrees angle
-    color_check()
-    RIGHT_MOTOR.run_angle(speed = 25, rotation_angle = 12)#Determine what 1 rotation is in degrees angle
-    color_check()
-    LEFT_MOTOR.run_angle(speed = 25, rotation_angle = 4)#Determine what 0.38 rotations is in degrees angle
-    color_check()
-    LEFT_MOTOR.run_angle(speed = 25, rotation_angle = 5)#Determine what 0.38 rotations is in degrees angle
-    color_check()
-    RIGHT_MOTOR.run_angle(speed = 25, rotation_angle = 14)#Determine what 1 rotation is in degrees angle
-    color_check()
-    LEFT_MOTOR.run_angle(speed = 25, rotation_angle = 10)#Determine what 0.38 rotations is in degrees angle
-    color_check()
-    LEFT_MOTOR.run_angle(speed = 25, rotation_angle = 12)#Determine what 0.38 rotations is in degrees angle
-    color_check()
-    def unused_code():
-        for i in range(3):
-            MEDIUM_MOTOR.run_angle(speed = 25, rotation_angle = 87)
-            LEFT_MOTOR.run_angle(speed = 25, rotation_angle = 2)#Determine what 0.3 rotations is in degrees angle
-            RIGHT_MOTOR.run_angle(speed = 25, rotation_angle = 2)#Determine what 0.3 rotations is in degrees angle
-            MEDIUM_MOTOR.run_angle(speed = 25, rotation_angle = -87)
-            LEFT_MOTOR.run_angle(speed = 25, rotation_angle = 2)#Determine what 0.3 rotations is in degrees angle
-            RIGHT_MOTOR.run_angle(speed = 25, rotation_angle = 2)#Determine what 0.3 rotations is in degrees angle
-            LEFT_MOTOR.run_angle(speed = 1, rotation_angle = 12)#Determine what 1 rotations is in degrees angle
-            RIGHT_MOTOR.run_angle(speed = 10, rotation_angle = 12)#Determine what 1 rotations is in degrees angle
-            LEFT_MOTOR.run_angle(speed = -25, rotation_angle = 1)#Determine what 0.1 rotations is in degrees angle
-            RIGHT_MOTOR.run_angle(speed = -25, rotation_angle = 1)#Determine what 0.1 rotations is in degrees angle
-            MEDIUM_MOTOR.run_angle(speed = 25, rotation_angle = 87)
-            LEFT_MOTOR.run_angle(speed = 25, rotation_angle = 2)#Determine what 0.3 rotations is in degrees angle
-            RIGHT_MOTOR.run_angle(speed = 25, rotation_angle = 2)#Determine what 0.3 rotations is in degrees angle
-            MEDIUM_MOTOR.run_angle(speed = 25, rotation_angle = -87)
-            LEFT_MOTOR.run_angle(speed = 30, rotation_angle = 6)#Determine what 0.3 rotations is in degrees angle
-            RIGHT_MOTOR.run_angle(speed = -30, rotation_angle = 6)#Determine what 0.3 rotations is in degrees angle
-
-def pickup_number():
-    active = True
-    open_claw()
-    while active:
-        line_follow()
-        found = line_follow()
-        if found == False:
-            break
-    while sonic_sensor.distance() >= 85:
-        drive_base.drive(50, 0)
+    """Create a one inch X"""
+    MEDIUM_MOTOR.reset_angle(0)
+    RIGHT_MOTOR.reset_angle(0)
+    MEDIUM_MOTOR.run_angle(150, 90)
+    drive_base.straight(60)
     drive_base.stop()
-    close_claw()
-
-def estimate_distance():
-    K = 1000  # from calibration
-    data = pixy2.get_linetracking_data()
-    # Process data
-    if data.error:
-        # Data error: unkown feature type, try reading again
-        pass
-    else:
-        if data.number_of_barcodes > 0:
-            for i in range(0, data.number_of_barcodes):
-                if data.barcodes[i].code == 1:
-                    print(data.barcodes[i].y)
-    '''print("Distance:", distance, "cm")
-    if width > 0:
-        return K / width
-    else:
-        return None'''
-    # after reading Pixy barcode block:
-
-def site_map():
-    color_line_follow(rotations=1.1)
-    color_line_follow(direction='right', rotations=1)
-    color_line_follow(rotations=1.15)
-    color_line_follow(direction='right')
-    color_line_follow()
-
-
-def color_line_follow(l_speed = 250, r_speed = 250, direction='left', rotations=1):
-    """Turn will be adjusted in code. Rotations multiplied by 360 degrees."""
-    rotation = int(360 * rotations)
-    for i in range(2):
-        if colorA_sensor.color() == Color.BLUE or colorA_sensor.color() == Color.BLACK:
-            while colorA_sensor.color() != Color.YELLOW or colorA_sensor.color() != Color.RED:
-                LEFT_MOTOR.run(l_speed)
-                RIGHT_MOTOR.run(r_speed + 50)
-                print('color seen')
-        else:
-            while colorA_sensor.color() != Color.YELLOW or colorA_sensor.color() != Color.RED:
-                LEFT_MOTOR.run(l_speed + 50)
-                RIGHT_MOTOR.run(r_speed)
-        if direction == 'left':
-            LEFT_MOTOR.stop()
-            RIGHT_MOTOR.reset_angle(0)
-            RIGHT_MOTOR.run_target(r_speed, target_angle=rotation)
-        if direction == 'right':
-            RIGHT_MOTOR.stop()
-            LEFT_MOTOR.reset_angle(0)
-            LEFT_MOTOR.run_target(l_speed, target_angle=rotation)
-
-def boulder_run(l_speed = 250, r_speed = 250, rotations=0.1):
-    """Turn will be adjusted in code. Rotations multiplied by 360 degrees."""
-    rotation = int(360 * rotations)
-    for i in range(3):
-        if colorA_sensor.color() == Color.BLUE or colorA_sensor.color() == Color.BLACK:
-            while colorA_sensor.color() != Color.YELLOW:
-                LEFT_MOTOR.run(l_speed)
-                RIGHT_MOTOR.run(r_speed - 80)
-        else:
-            while colorA_sensor.color() != Color.YELLOW:
-                LEFT_MOTOR.run(l_speed - 80)
-                RIGHT_MOTOR.run(r_speed)
-        LEFT_MOTOR.reset_angle(0)
-        RIGHT_MOTOR.reset_angle(0)
-        LEFT_MOTOR.run_target(l_speed, target_angle=rotation)
-        RIGHT_MOTOR.run_target(r_speed, target_angle=rotation)
+    MEDIUM_MOTOR.run_angle(150, -90)
+    RIGHT_MOTOR.reset_angle(0)
+    RIGHT_MOTOR.run_target(200, 100)
+    MEDIUM_MOTOR.run_angle(150, 90)
+    drive_base.straight(-60)
+    drive_base.stop
+    MEDIUM_MOTOR.run_angle(150, -90)
 
 def challenge_1():
     """Avoid 4 cones placed in a straight line while moving 
     from base camp to primary dig site"""
-    while True:
-        line_follow()
-        if line_follow() == False:
-            break
+    color_sense_follow()
 
 def challenge_2():
-    """Pickup and place 4 markers from equipment site 
-    and place at the next 4 challenges to be completed in order"""
-    line_follow()
-    pickup_number()
+    """parthenon build"""
+    #Pickup and place first pillar
+    while sonic_sensor.distance() >= 85:
+        drive_base.drive(150, 0)
+    drive_base.stop()
+    close_claw()
+    drive_base.turn(-170)
+    drive_base.straight(300)
+    color_sense_follow()
+    drive_base.straight(85)
+    open_claw()
+    drive_base.straight(-80)
+    drive_base.turn(170)
+    drive_base.straight(100)
+    color_sense_follow()
+    #Pickup and place second pillar
+    while sonic_sensor.distance() >= 85:
+        drive_base.drive(150, 0)
+    drive_base.stop()
+    close_claw()
+    drive_base.turn(-170)
+    color_sense_follow()
+    drive_base.turn(80)
+    drive_base.straight(50)
+    color_sense_follow()
+    open_claw()
+    drive_base.straight(-80)
+    drive_base.turn(125)
+    drive_base.straight(150)
+    color_sense_follow()
+    #Pickup and place third pillar
+    while sonic_sensor.distance() >= 85:
+        drive_base.drive(150, 0)
+    drive_base.stop()
+    close_claw()
+    drive_base.turn(-170)
+    color_sense_follow2()
+    drive_base.turn(80)
+    drive_base.straight(120)
+    open_claw()
+    drive_base.straight(-130)
+    drive_base.turn(80)
+    color_sense_follow()
+    #Pickup and place fourth pillar
+    while sonic_sensor.distance() >= 85:
+        drive_base.drive(150, 0)
+    drive_base.stop()
+    close_claw()
+    drive_base.turn(-170)
+    color_sense_follow2()
+    drive_base.turn(-50)
+    open_claw()
+    drive_base.straight(-500)
+    drive_base.turn(250)
     
 def challenge_3():
     """Mark a 1" X at location of 3 buried artifacts in main dig site (must be 3" apart)"""
-    line_follow()
     mark_x()
-
-def challenge_4():
-    """Navigate perimeter of main dig site and mark 4 corners
-    bonus if 2nd bot circles main site twice and misses markers"""
-    pass
-
-def challenge_5():
-    """Artifact Identifaction: Transport 2 tools, 2 art, and 2 fragments from artifact scatter area 
-    to collections bins labeled Tools, Art, and Fragments
-    Artifact Preservation: Place tops from equipment site on top of the 3 bins"""
-    pass
-
-def challenge_6():
-    """Bot 1 brings artifacts with phrases: Ankh, Udja, Seneb, Em Hotep to bot 2.
-    Bot 2 'scans' artifacts, spins in circle, and places artifacts in correct order"""
-    pass
-
-def challenge_7():
-    """Place 2 ramps and a bridge that are 6" tall.  Climb the bridge and retrieve artifact.
-    Carry artifact down to colection bin near platform"""
-    pass
-
-def challenge_8():
-    """Retrieve parts from main dig site and take to reconstruction site. 
-    Place four 8" pillars on a 12x12 base.  Place a 4" tall roof on the pillars."""
-
-    pickup_number()
-    drive_base.straight(-50)
-    drive_base.turn(180)
-    drive_base.straight(200)
-    drive_base.turn(-90)
-
-    i = 1
-    while i <= 4:
-        open_claw()
-        while True:
-            data = pixy2.get_linetracking_data()
-            if data.number_of_vectors > 0:
-                line_follow()
-                data.clear()
-            else: 
-                break
-        while sonic_sensor.distance() >= 85:
-            drive_base.drive(50, 0)
-        drive_base.stop()
-        i += 1
-        close_claw()
-
-    active = True
-    for _ in range(4):
-        open_claw()
-        while active:
-            line_follow()
-            found = line_follow()
-            if found == False:
-                break
-        while sonic_sensor.distance() >= 85:
-            drive_base.drive(50, 0)
-        drive_base.stop()
-        close_claw()
-
-
-def challenge_9():
-    """Retrieve an artifact that triggers a boulder run. Place artifact in bin without getting hit by boulder"""
-    color_sense_follow()
-    #while True:
-    #line_follow()
-    robot1.speaker.play_file('indiana_jones.wav')
-
+    drive_base.straight(220)
+    drive_base.stop()
+    mark_x()
+    drive_base.straight(220)
+    drive_base.stop()
+    mark_x()
+    
 def main():
-    # The server must be started before the client!
-    # print('waiting for connection...')
-    # server.wait_for_connection()
-    # print('connected!')
-    # # In this program, the server waits for the client to send the first message
-    # # and then sends a reply.
-    # mbox.wait()
-    # print(mbox.read())
-    # mbox.send('hello to you!')
-
-    #Code for challenges here
-    challenge_9()
-
+    #The server must be started before the client!
+    server.wait_for_connection()
+    challenge_1()
+    mbox.send("Go")
+    challenge_2()
+    mbox.send("Next")
+    mbox.wait()
+    message = mbox.read()
+    if message == "Done":
+        drive_base.turn(-110)
+        drive_base.straight(800)
+        challenge_3()
+    mbox.send('finished')
+    mbox.wait()
+    message2 = mbox.read()
+    if message2 == "Play song":
+        robot1.speaker.play_file('indiana_jones.wav')
+       
 if __name__ == '__main__':
     main()
