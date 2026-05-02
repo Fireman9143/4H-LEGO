@@ -81,7 +81,7 @@ def challenge_2():
     drive_base.turn(angle=-10)
     drive_base.straight(distance=300)
     color_sense_follow()
-    drive_base.straight(distance=20)
+    drive_base.straight(distance=40)
     raise_forks(height=-1200)
     drive_base.straight(distance=-250)
     raise_forks(height=-2600)
@@ -112,11 +112,12 @@ def main():
     message = mbox.read()
     if message == "Go": #When the first robot is clear, tell this robot to start cones
         challenge_1()
+    mbox.send("Continue")
     mbox.wait() #Once the cone line follow is done, wait for this robot's turn to get roof
     message2 = mbox.read()
     if message2 == "Next": #When the pillars are in place, pickup the roof
         challenge_2()
-        mbox.send("Done")
+    mbox.send("Done")
     mbox.wait()
     message3=mbox.read()
     if message3 == "finished":
