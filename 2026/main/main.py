@@ -13,9 +13,9 @@ server = BluetoothMailboxServer()
 mbox = TextMailbox('greeting', server)
 
 # Defining constants
-KP = 1.2      # Proportional constant PID-controller
+KP = 0.9      # Proportional constant PID-controller
 KI = 0    # Integral constant PID-controller
-KD = 2        # Derivative constant PID-controller
+KD = 1        # Derivative constant PID-controller
 GAIN = 7    # Gain for motorspeed
 
 robot1 = EV3Brick()
@@ -48,7 +48,7 @@ def color_sense_follow():
     derivitive = 0
 
     # Set the drive speed at 100 millimeters per second.
-    DRIVE_SPEED = 90
+    DRIVE_SPEED = 100
 
     while True:
         deviation =  (colorA_sensor.reflection() - threshold)*-1
@@ -75,7 +75,7 @@ def color_sense_follow2():
     derivitive = 0
 
     # Set the drive speed at 100 millimeters per second.
-    DRIVE_SPEED = 90
+    DRIVE_SPEED = 100
 
     while True:
         deviation =  (colorA_sensor.reflection() - threshold)*-1
@@ -116,58 +116,61 @@ def challenge_1():
 def challenge_2():
     """parthenon build"""
     #Pickup and place first pillar
-    while sonic_sensor.distance() >= 85:
-        drive_base.drive(150, 0)
-    drive_base.stop()
-    close_claw()
-    drive_base.turn(-170)
-    drive_base.straight(300)
-    color_sense_follow()
-    drive_base.straight(85)
-    open_claw()
-    drive_base.straight(-80)
-    drive_base.turn(170)
-    drive_base.straight(100)
-    color_sense_follow()
-    #Pickup and place second pillar
-    while sonic_sensor.distance() >= 85:
-        drive_base.drive(150, 0)
-    drive_base.stop()
-    close_claw()
-    drive_base.turn(-170)
-    color_sense_follow()
-    drive_base.turn(80)
-    drive_base.straight(50)
-    color_sense_follow()
-    open_claw()
-    drive_base.straight(-80)
-    drive_base.turn(125)
-    drive_base.straight(150)
-    color_sense_follow()
-    #Pickup and place third pillar
-    while sonic_sensor.distance() >= 85:
-        drive_base.drive(150, 0)
-    drive_base.stop()
-    close_claw()
-    drive_base.turn(-170)
-    color_sense_follow2()
-    drive_base.turn(80)
-    drive_base.straight(120)
-    open_claw()
-    drive_base.straight(-130)
-    drive_base.turn(80)
-    color_sense_follow()
-    #Pickup and place fourth pillar
-    while sonic_sensor.distance() >= 85:
-        drive_base.drive(150, 0)
-    drive_base.stop()
-    close_claw()
-    drive_base.turn(-170)
-    color_sense_follow2()
-    drive_base.turn(-50)
-    open_claw()
-    drive_base.straight(-500)
-    drive_base.turn(250)
+    mbox.wait()
+    message = mbox.read()
+    if message == 'Continue':
+        while sonic_sensor.distance() >= 85:
+            drive_base.drive(150, 0)
+        drive_base.stop()
+        close_claw()
+        drive_base.turn(-170)
+        drive_base.straight(300)
+        color_sense_follow()
+        drive_base.straight(85)
+        open_claw()
+        drive_base.straight(-80)
+        drive_base.turn(170)
+        drive_base.straight(100)
+        color_sense_follow()
+        #Pickup and place second pillar
+        while sonic_sensor.distance() >= 85:
+            drive_base.drive(150, 0)
+        drive_base.stop()
+        close_claw()
+        drive_base.turn(-170)
+        color_sense_follow()
+        drive_base.turn(80)
+        drive_base.straight(50)
+        color_sense_follow()
+        open_claw()
+        drive_base.straight(-80)
+        drive_base.turn(125)
+        drive_base.straight(150)
+        color_sense_follow()
+        #Pickup and place third pillar
+        while sonic_sensor.distance() >= 85:
+            drive_base.drive(150, 0)
+        drive_base.stop()
+        close_claw()
+        drive_base.turn(-170)
+        color_sense_follow2()
+        drive_base.turn(80)
+        drive_base.straight(120)
+        open_claw()
+        drive_base.straight(-130)
+        drive_base.turn(80)
+        color_sense_follow()
+        #Pickup and place fourth pillar
+        while sonic_sensor.distance() >= 85:
+            drive_base.drive(150, 0)
+        drive_base.stop()
+        close_claw()
+        drive_base.turn(-170)
+        color_sense_follow2()
+        drive_base.turn(-50)
+        open_claw()
+        drive_base.straight(-500)
+        drive_base.turn(230)
     
 def challenge_3():
     """Mark a 1" X at location of 3 buried artifacts in main dig site (must be 3" apart)"""
@@ -189,8 +192,8 @@ def main():
     mbox.wait()
     message = mbox.read()
     if message == "Done":
-        drive_base.turn(-110)
-        drive_base.straight(800)
+        drive_base.turn()
+        drive_base.straight(400)
         challenge_3()
     mbox.send('finished')
     mbox.wait()
